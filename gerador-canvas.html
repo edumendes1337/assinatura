@@ -1,0 +1,1290 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gerador Avançado de Assinaturas - KNBS</title>
+    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Open Sans', Arial, sans-serif;
+            background-color: #f4f4f9;
+            padding: 20px;
+            display: flex;
+            gap: 30px;
+            justify-content: center;
+            align-items: flex-start;
+        }
+        .painel-lateral {
+            background: white;
+            padding: 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            width: 380px;
+            flex-shrink: 0;
+            height: fit-content;
+            overflow: hidden;
+        }
+        .painel-cabecalho {
+            padding: 20px 20px 0;
+        }
+        .painel-lateral h2 {
+            margin: 0 0 15px;
+            color: #0563C1;
+            font-size: 18px;
+            border-bottom: 2px solid #0563C1;
+            padding-bottom: 10px;
+        }
+        .abas {
+            display: flex;
+            border-bottom: 1px solid #ddd;
+            background: #f8f9fa;
+        }
+        .aba-btn {
+            flex: 1;
+            padding: 10px 8px;
+            border: none;
+            background: transparent;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: bold;
+            color: #666;
+            border-bottom: 3px solid transparent;
+            margin: 0;
+            width: auto;
+            border-radius: 0;
+            transition: color 0.2s, border-color 0.2s;
+        }
+        .aba-btn:hover { color: #0088CE; background: transparent; }
+        .aba-btn.ativa {
+            color: #0563C1;
+            border-bottom-color: #0563C1;
+            background: white;
+        }
+        .aba-conteudo {
+            display: none;
+            padding: 20px;
+            max-height: 70vh;
+            overflow-y: auto;
+        }
+        .aba-conteudo.ativa { display: block; }
+        .grupo-secao {
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #eee;
+        }
+        .grupo-secao:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+        .grupo-secao h3 {
+            margin: 0 0 12px;
+            font-size: 13px;
+            color: #0563C1;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .grupo-input {
+            margin-bottom: 12px;
+        }
+        .grupo-input label {
+            display: block;
+            font-weight: bold;
+            font-size: 12px;
+            margin-bottom: 4px;
+            color: #333;
+        }
+        .grupo-input input[type="text"],
+        .grupo-input input[type="number"],
+        .grupo-input input[type="email"],
+        .grupo-input input[type="password"],
+        .grupo-input select {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+            font-family: 'Open Sans', sans-serif;
+            font-size: 13px;
+        }
+        .grupo-input select { cursor: pointer; background: white; }
+        button.acao-secundaria {
+            padding: 8px 12px;
+            background-color: #f0f0f0;
+            color: #333;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 12px;
+            width: 100%;
+            margin-top: 8px;
+            transition: background 0.2s;
+        }
+        button.acao-secundaria:hover { background-color: #e0e0e0; }
+        button.acao-perigo {
+            background-color: #fde8e8;
+            color: #c0392b;
+            border-color: #f5c6c6;
+        }
+        button.acao-perigo:hover { background-color: #f9d0d0; }
+        .linha-botoes {
+            display: flex;
+            gap: 8px;
+            margin-top: 10px;
+        }
+        .linha-botoes button { flex: 1; margin-top: 0; }
+        .lista-funcionarios {
+            max-height: 180px;
+            overflow-y: auto;
+            border: 1px solid #eee;
+            border-radius: 4px;
+            margin-top: 10px;
+        }
+        .item-funcionario {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 10px;
+            border-bottom: 1px solid #f0f0f0;
+            font-size: 12px;
+        }
+        .item-funcionario:last-child { border-bottom: none; }
+        .item-funcionario span { flex: 1; padding-right: 8px; }
+        .item-funcionario button {
+            padding: 4px 8px;
+            font-size: 11px;
+            border: 1px solid #ccc;
+            border-radius: 3px;
+            background: white;
+            cursor: pointer;
+            width: auto;
+            margin: 0;
+        }
+        .item-funcionario button:hover { background: #f5f5f5; }
+        .adm-bloqueado, .adm-painel { display: none; }
+        .adm-bloqueado.ativo, .adm-painel.ativo { display: block; }
+        .msg-sucesso {
+            font-size: 12px;
+            color: #107c41;
+            margin-top: 8px;
+            font-weight: bold;
+        }
+        .linha-estilo {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            align-items: end;
+        }
+        .linha-estilo .grupo-input { margin-bottom: 0; }
+        .linha-estilo-tres {
+            display: grid;
+            grid-template-columns: 1fr 80px 70px;
+            gap: 8px;
+            align-items: end;
+            margin-bottom: 12px;
+        }
+        .input-cor {
+            width: 100%;
+            height: 36px;
+            padding: 2px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            cursor: pointer;
+            box-sizing: border-box;
+        }
+        .checkbox-linha {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 12px;
+            font-weight: bold;
+            color: #333;
+            margin-top: 8px;
+        }
+        .checkbox-linha input { width: auto; margin: 0; cursor: pointer; }
+        .linha-dimensoes {
+            display: flex;
+            gap: 10px;
+        }
+        .linha-dimensoes .grupo-input { flex: 1; }
+        .painel-acoes {
+            padding: 0 20px 20px;
+        }
+        button.acao-principal {
+            margin-top: 0;
+            padding: 12px 20px;
+            background-color: #0088CE;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            width: 100%;
+            transition: background 0.2s;
+        }
+        button.acao-principal:hover { background-color: #006b9f; }
+        button.acao-principal:disabled { background-color: #cccccc; cursor: wait; }
+        button.acao-copiar {
+            background-color: #107c41;
+            margin-top: 10px;
+        }
+        button.acao-copiar:hover { background-color: #0d6535; }
+        .dica-campo {
+            font-size: 11px;
+            color: #888;
+            margin-top: 3px;
+            font-weight: normal;
+        }
+        .slider-linha {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .slider-linha input[type="range"] {
+            flex: 1;
+            cursor: pointer;
+        }
+        .slider-linha input[type="number"] {
+            width: 70px;
+            padding: 6px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-family: 'Open Sans', sans-serif;
+            font-size: 13px;
+        }
+
+        .area-preview {
+            flex: 1;
+            max-width: 800px;
+        }
+        #preview-container {
+            background: #ffffff;
+            padding: 40px;
+            border: 1px dashed #cccccc;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            background-image: linear-gradient(45deg, #eee 25%, transparent 25%, transparent 75%, #eee 75%, #eee),
+                              linear-gradient(45deg, #eee 25%, transparent 25%, transparent 75%, #eee 75%, #eee);
+            background-size: 20px 20px;
+            background-position: 0 0, 10px 10px;
+        }
+        canvas { display: none; }
+    </style>
+</head>
+<body>
+
+    <div class="painel-lateral">
+        <div class="painel-cabecalho">
+            <h2>Configuração da Assinatura</h2>
+        </div>
+
+        <div class="abas">
+            <button class="aba-btn ativa" data-aba="dados" type="button">Dados</button>
+            <button class="aba-btn" data-aba="estilo" type="button">Estilo</button>
+            <button class="aba-btn" data-aba="layout" type="button">Layout</button>
+            <button class="aba-btn" data-aba="admin" type="button">Admin</button>
+        </div>
+
+        <!-- Aba: Dados -->
+        <div id="aba-dados" class="aba-conteudo ativa">
+            <div class="grupo-secao">
+                <h3>Selecionar Funcionário</h3>
+                <div class="grupo-input">
+                    <label for="selectFuncionario">Carregar dados do cadastro:</label>
+                    <select id="selectFuncionario" onchange="aplicarFuncionarioSelecionado()">
+                        <option value="">— Selecione um funcionário —</option>
+                    </select>
+                    <span class="dica-campo">Ao selecionar, nome, cargo e contatos são preenchidos automaticamente</span>
+                </div>
+            </div>
+            <div class="grupo-secao">
+                <h3>Informações Pessoais</h3>
+                <div class="grupo-input">
+                    <label for="inputNome">Nome Completo:</label>
+                    <input type="text" id="inputNome" value="ERICK PICCOLI">
+                </div>
+                <div class="grupo-input">
+                    <label for="inputCargo">Cargo:</label>
+                    <input type="text" id="inputCargo" value="SUPERVISOR DE LOGÍSTICA">
+                </div>
+            </div>
+            <div class="grupo-secao">
+                <h3>Contatos</h3>
+                <div class="grupo-input">
+                    <label for="inputFixo">Ramal / Fixo:</label>
+                    <input type="text" id="inputFixo" value="+55 19 3302 4770 - R: 228">
+                </div>
+                <div class="grupo-input">
+                    <label for="inputCelular">Telemóvel / Celular:</label>
+                    <input type="text" id="inputCelular" value="+55 19 98123 4752">
+                    <span class="dica-campo">Deixe em branco para ocultar</span>
+                </div>
+                <div class="grupo-input">
+                    <label for="inputEmail">E-mail:</label>
+                    <input type="text" id="inputEmail" value="E.PICCOLI@KUTTNER-NBS.COM.BR">
+                </div>
+            </div>
+        </div>
+
+        <!-- Aba: Estilo -->
+        <div id="aba-estilo" class="aba-conteudo">
+            <div class="grupo-secao">
+                <h3>Nome</h3>
+                <div class="linha-estilo-tres">
+                    <div class="grupo-input">
+                        <label for="inputNomeTamanho">Tamanho (px)</label>
+                        <input type="number" id="inputNomeTamanho" value="50" min="10" max="200">
+                    </div>
+                    <div class="grupo-input">
+                        <label for="inputNomeCor">Cor</label>
+                        <input type="color" id="inputNomeCor" class="input-cor" value="#0088CE">
+                    </div>
+                    <div class="grupo-input">
+                        <label>&nbsp;</label>
+                        <label class="checkbox-linha" style="margin-top:0;height:36px;">
+                            <input type="checkbox" id="inputNomeBold" checked> Negrito
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="grupo-secao">
+                <h3>Cargo</h3>
+                <div class="linha-estilo-tres">
+                    <div class="grupo-input">
+                        <label for="inputCargoTamanho">Tamanho (px)</label>
+                        <input type="number" id="inputCargoTamanho" value="40" min="10" max="200">
+                    </div>
+                    <div class="grupo-input">
+                        <label for="inputCargoCor">Cor</label>
+                        <input type="color" id="inputCargoCor" class="input-cor" value="#333333">
+                    </div>
+                    <div class="grupo-input">
+                        <label>&nbsp;</label>
+                        <label class="checkbox-linha" style="margin-top:0;height:36px;">
+                            <input type="checkbox" id="inputCargoBold"> Negrito
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="grupo-secao">
+                <h3>Contatos (T / C / E)</h3>
+                <div class="linha-estilo-tres">
+                    <div class="grupo-input">
+                        <label for="inputContatoTamanho">Tamanho (px)</label>
+                        <input type="number" id="inputContatoTamanho" value="40" min="10" max="200">
+                    </div>
+                    <div class="grupo-input">
+                        <label for="inputContatoCor">Cor</label>
+                        <input type="color" id="inputContatoCor" class="input-cor" value="#333333">
+                    </div>
+                    <div class="grupo-input">
+                        <label>&nbsp;</label>
+                        <label class="checkbox-linha" style="margin-top:0;height:36px;">
+                            <input type="checkbox" id="inputContatoBold"> Negrito
+                        </label>
+                    </div>
+                </div>
+                <span class="dica-campo">Os rótulos T:, C: e E: permanecem em negrito por padrão</span>
+            </div>
+        </div>
+
+        <!-- Aba: Layout -->
+        <div id="aba-layout" class="aba-conteudo">
+            <div class="grupo-secao">
+                <h3>Fundo da Assinatura (Cloudinary)</h3>
+                <div class="grupo-input">
+                    <label for="inputUrlFundo">Link da imagem de fundo:</label>
+                    <input type="text" id="inputUrlFundo" value=""
+                           placeholder="https://res.cloudinary.com/..."
+                           onchange="aplicarUrlFundo()">
+                </div>
+                <span class="dica-campo">Cole o link <strong>secure_url</strong> do Cloudinary após o upload da base PNG</span>
+            </div>
+            <div class="grupo-secao">
+                <h3>Dimensão da Imagem (Canvas)</h3>
+                <div class="linha-dimensoes">
+                    <div class="grupo-input">
+                        <label for="inputImgWidth">Largura (px)</label>
+                        <input type="number" id="inputImgWidth" value="2000" min="100"
+                               oninput="onDimensaoImagemChange()">
+                    </div>
+                    <div class="grupo-input">
+                        <label for="inputImgHeight">Altura (px)</label>
+                        <input type="number" id="inputImgHeight" value="635" min="50"
+                               oninput="onDimensaoImagemChange()">
+                    </div>
+                </div>
+                <span class="dica-campo">Tamanho real do canvas e da imagem de fundo desenhada</span>
+            </div>
+
+            <div class="grupo-secao">
+                <h3>Dimensão dos Textos (Referência)</h3>
+                <label class="checkbox-linha" style="margin-bottom:10px;">
+                    <input type="checkbox" id="checkTextoIgualImagem" checked onchange="toggleTextoIgualImagem()">
+                    Altura igual à dimensão da imagem
+                </label>
+                <div class="linha-dimensoes" id="grupoTextoRef">
+                    <div class="grupo-input">
+                        <label for="inputTextRefWidth">Largura ref. (px)</label>
+                        <input type="number" id="inputTextRefWidth" value="2000" min="100" readonly>
+                    </div>
+                    <div class="grupo-input">
+                        <label for="inputTextRefHeight">Altura ref. (px)</label>
+                        <input type="number" id="inputTextRefHeight" value="635" min="50" disabled
+                               oninput="gerarAssinatura()">
+                    </div>
+                </div>
+                <span class="dica-campo">Largura ref. = exibição × 2000 ÷ 544 (calculada automaticamente)</span>
+                <p id="infoEscala" class="dica-campo" style="margin-top:6px;color:#0563C1;font-weight:bold;"></p>
+            </div>
+
+            <div class="grupo-secao">
+                <h3>Exibir no E-mail (Outlook)</h3>
+                <div class="linha-dimensoes">
+                    <div class="grupo-input">
+                        <label for="inputWidth">Largura (px)</label>
+                        <input type="number" id="inputWidth" value="720" min="100"
+                               oninput="onExibirLarguraChange()">
+                    </div>
+                    <div class="grupo-input">
+                        <label for="inputHeight">Altura (px)</label>
+                        <input type="number" id="inputHeight" value="178" min="50">
+                    </div>
+                </div>
+                <span class="dica-campo">Tamanho da tag &lt;img&gt; colada no Outlook (independente do canvas)</span>
+            </div>
+
+            <div class="grupo-secao">
+                <h3>Posição e Alinhamento <small style="font-weight:normal;text-transform:none;">(na ref. dos textos)</small></h3>
+                <div class="grupo-input">
+                    <label for="inputPosicaoY">Posição Y do nome (px)</label>
+                    <input type="number" id="inputPosicaoY" value="175" min="0"
+                           oninput="gerarAssinatura()">
+                </div>
+                <div class="grupo-input">
+                    <label for="inputMargemEsquerda">Margem esquerda (px)</label>
+                    <div class="slider-linha">
+                        <input type="range" id="inputMargemEsquerdaSlider" min="0" max="800" value="50"
+                               oninput="sincronizarMargemEsquerda(this.value)">
+                        <input type="number" id="inputMargemEsquerda" value="50" min="0" max="800"
+                               oninput="sincronizarMargemEsquerda(this.value)">
+                    </div>
+                </div>
+            </div>
+            <div class="grupo-secao">
+                <h3>Quebra de Linha do Cargo</h3>
+                <div class="grupo-input">
+                    <label for="inputCargoMaxWidth">Largura máxima (px)</label>
+                    <input type="number" id="inputCargoMaxWidth" value="845" min="50" max="2000"
+                           oninput="gerarAssinatura()">
+                    <span class="dica-campo">Na referência dos textos — define onde o cargo quebra linha</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Aba: Admin -->
+        <div id="aba-admin" class="aba-conteudo">
+            <div id="admBloqueado" class="adm-bloqueado ativo">
+                <div class="grupo-secao">
+                    <h3>Acesso Administrativo</h3>
+                    <div class="grupo-input">
+                        <label for="inputAdmPin">PIN de acesso:</label>
+                        <input type="password" id="inputAdmPin" placeholder="Digite o PIN" maxlength="20">
+                        <span class="dica-campo">PIN padrão: <strong>knbs2026</strong></span>
+                    </div>
+                    <button class="acao-principal" type="button" onclick="desbloquearAdmin()">Entrar</button>
+                </div>
+            </div>
+
+            <div id="admPainel" class="adm-painel">
+                <div class="grupo-secao">
+                    <h3 id="admFormTitulo">Adicionar Funcionário</h3>
+                    <input type="hidden" id="admEditId" value="">
+                    <div class="grupo-input">
+                        <label for="admNome">Nome completo:</label>
+                        <input type="text" id="admNome" placeholder="Ex: JOÃO DA SILVA">
+                    </div>
+                    <div class="grupo-input">
+                        <label for="admCargo">Cargo:</label>
+                        <input type="text" id="admCargo" placeholder="Ex: ANALISTA DE RH PLENO">
+                    </div>
+                    <div class="grupo-input">
+                        <label for="admFixo">Ramal / Fixo:</label>
+                        <input type="text" id="admFixo" placeholder="Ex: +55 19 3302 4770 - R: 200">
+                    </div>
+                    <div class="grupo-input">
+                        <label for="admCelular">Celular (opcional):</label>
+                        <input type="text" id="admCelular" placeholder="Deixe em branco para ocultar">
+                    </div>
+                    <div class="grupo-input">
+                        <label for="admEmail">E-mail:</label>
+                        <input type="text" id="admEmail" placeholder="Ex: J.SILVA@KUTTNER-NBS.COM.BR">
+                    </div>
+                    <div class="linha-botoes">
+                        <button class="acao-principal" type="button" onclick="salvarFuncionarioAdmin()" style="margin-top:0;">Salvar</button>
+                        <button class="acao-secundaria" type="button" onclick="limparFormAdmin()">Limpar</button>
+                    </div>
+                    <p id="admMsg" class="msg-sucesso" style="display:none;"></p>
+                </div>
+
+                <div class="grupo-secao">
+                    <h3>Funcionários Cadastrados (<span id="admTotal">0</span>)</h3>
+                    <div id="listaFuncionariosAdmin" class="lista-funcionarios"></div>
+                    <div class="linha-botoes">
+                        <button class="acao-secundaria" type="button" onclick="exportarFuncionarios()">Exportar JSON</button>
+                        <button class="acao-secundaria" type="button" onclick="document.getElementById('inputImportJson').click()">Importar JSON</button>
+                        <input type="file" id="inputImportJson" accept=".json" style="display:none" onchange="importarFuncionarios(event)">
+                    </div>
+                    <button class="acao-secundaria acao-perigo" type="button" onclick="restaurarPadraoFuncionarios()">Restaurar lista padrão</button>
+                    <button class="acao-secundaria" type="button" onclick="bloquearAdmin()">Sair do Admin</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="painel-acoes">
+            <button class="acao-principal" type="button" onclick="gerarAssinatura()">Atualizar Visualização</button>
+            <button id="btnCopiar" class="acao-principal acao-copiar" type="button" onclick="copiarAssinaturaAPI()">Copiar Tudo para o Outlook</button>
+        </div>
+    </div>
+
+    <div class="area-preview">
+        <h3 style="margin-top: 0; color: #333;">Pré-visualização do E-mail</h3>
+        <div id="preview-container"></div>
+    </div>
+
+    <canvas id="meuCanvas" width="2000" height="635"></canvas>
+
+    <script>
+        const urlFundoPadrao = 'https://res.cloudinary.com/dxhnjdc0m/image/upload/v1790269342/BASE_hyq1m5.png';
+        const cloudName = 'dxhnjdc0m';
+        const uploadPreset = 'assinaturas_knbs';
+        const STORAGE_KEY_FUNDO = 'knbs_url_fundo_v1';
+
+        const FATOR_LARGURA_TEXTO = 2000 / 544;
+
+        const DEFAULTS = {
+            nome:      { tamanho: 50,  cor: '#0088CE', bold: true  },
+            cargo:     { tamanho: 38,  cor: '#333333', bold: false, maxWidth: 845 },
+            contato:   { tamanho: 38,  cor: '#333333', bold: false },
+            imagem:    { width: 2000, height: 635 },
+            textoRef:  { width: 2000, height: 635 },
+            exibir:    { width: 544, height: 178 },
+            margemEsquerda: 50,
+            posicaoYNome: 175
+        };
+
+        const ADM_PIN = 'knbs2026';
+        const STORAGE_KEY = 'knbs_funcionarios_v1';
+
+        const FUNCIONARIOS_PADRAO = [
+            { id: 'a-carla',       nome: 'ANA CARLA MONTANARI',           cargo: 'ANALISTA FISCAL SÊNIOR',                              fixo: '+55 19 3302 4770 - R: 213', celular: '',                    email: 'A.CARLA@KUTTNER-NBS.COM.BR' },
+            { id: 'a-carvalho',    nome: 'ADÃO F. CARVALHO',              cargo: 'COORDENADOR DE COMPRAS',                              fixo: '+55 19 3302 4753 - R: 214', celular: '+55 19 99392 1765',   email: 'A.CARVALHO@KUTTNER-NBS.COM.BR' },
+            { id: 'a-fernandes',   nome: 'ALLEF FERNANDES',               cargo: 'AUXILIAR PROJETO MECÂNICO JÚNIOR',                    fixo: '+55 19 3302 4770 - R: 216', celular: '',                    email: 'A.FERNANDES@KUTTNER-NBS.COM.BR' },
+            { id: 'a-guizo',       nome: 'ALEX L. GUIZO',                 cargo: 'PROJETISTA MECÂNICO PLENO',                           fixo: '+55 19 3302 4770 - R: 218', celular: '',                    email: 'A.GUIZO@KUTTNER-NBS.COM.BR' },
+            { id: 'aprendiz-adm',  nome: 'YASMIN BEATRIZ GOMES PINHEIRO', cargo: 'APRENDIZ',                                            fixo: '+55 19 3302 4770',          celular: '',                    email: 'ADM@KUTTNER-NBS.COM.BR' },
+            { id: 'b-custodio',    nome: 'BENEDITO A. CUSTODIO',          cargo: 'ASSISTENTE TÉCNICO SÊNIOR / SENIOR TECHNICAL ASSISTANT', fixo: '+55 19 3302 4770',          celular: '+55 19 99392 1648',   email: 'B.CUSTODIO@KUTTNER-NBS.COM.BR' },
+            { id: 'b-pedrozo',     nome: 'BIANCA PEDROZO',                cargo: 'ANALISTA DE MARKETING',                               fixo: '+55 19 3302 4770 - R: 207', celular: '',                    email: 'B.PEDROZO@KUTTNER-NBS.COM.BR' },
+            { id: 'b-trevisani',   nome: 'BRUNO TREVISANI',               cargo: 'ASSISTENTE PCP PLENO',                                fixo: '+55 19 3302 4770 - R: 229', celular: '',                    email: 'B.TREVISANI@KUTTNER-NBS.COM.BR' },
+            { id: 'c-silva',       nome: 'CRISTIANO SILVA',               cargo: 'SUPERVISOR MONTAGEM MECÂNICA',                        fixo: '+55 19 3302 4770 - R: 227', celular: '',                    email: 'C.SILVA@KUTTNER-NBS.COM.BR' },
+            { id: 'd-leite',       nome: 'DIOGO DE MELLO LEITE',          cargo: 'COORDENADOR PROJETO MECÂNICO',                        fixo: '+55 19 3302 4770 - R: 222', celular: '+55 19 99002 2119',   email: 'D.LEITE@KUTTNER-NBS.COM.BR' },
+            { id: 'd-murakami',    nome: 'DANILO T. MURAKAMI',            cargo: 'COMPRADOR INDUSTRIAL PLENO',                          fixo: '+55 19 3302 4770 - R: 215', celular: '',                    email: 'D.MURAKAMI@KUTTNER-NBS.COM.BR' },
+            { id: 'e-geraldin',    nome: 'ESTELLA DA FONSECA GERALDIN',   cargo: 'ASSISTENTE FISCAL PLENO',                             fixo: '+55 19 3302 4770 - R: 213', celular: '',                    email: 'E.GERALDIN@KUTTNER-NBS.COM.BR' },
+            { id: 'e-miranda',     nome: 'EDUARDO M. MENDES',             cargo: 'ASSISTENTE PROJETO MECÂNICO SÊNIOR / TI',             fixo: '+55 19 3302 4770 - R: 219', celular: '',                    email: 'E.MIRANDA@KUTTNER-NBS.COM.BR' },
+            { id: 'e-piccoli',     nome: 'ERICK PICCOLI',                 cargo: 'SUPERVISOR DE LOGÍSTICA',                             fixo: '+55 19 3302 4770 - R: 228', celular: '+55 19 98123 4752',   email: 'E.PICCOLI@KUTTNER-NBS.COM.BR' },
+            { id: 'e-santos',      nome: 'EPHRAIN AUGUSTO SANTOS',        cargo: 'AUXILIAR PROJETO MECÂNICO',                           fixo: '+55 19 3302 4770 - R: 207', celular: '',                    email: 'E.SANTOS@KUTTNER-NBS.COM.BR' },
+            { id: 'exp-luciano',   nome: 'LUCIANO OLIVEIRA',              cargo: 'ALMOXARIFE',                                          fixo: '+55 19 3302 4770 - R: 230', celular: '',                    email: 'EXPEDICAO@KUTTNER-NBS.COM.BR' },
+            { id: 'exp-luiz',      nome: 'LUIZ FERNANDO DA SILVA',        cargo: 'ALMOXARIFE',                                          fixo: '+55 19 3302 4770 - R: 230', celular: '',                    email: 'EXPEDICAO@KUTTNER-NBS.COM.BR' },
+            { id: 'f-cella',       nome: 'FLÁVIO FERNANDO CELLA',         cargo: 'ELETRICISTA SÊNIOR',                                  fixo: '+55 19 3302 4770',          celular: '',                    email: 'F.CELLA@KUTTNER-NBS.COM.BR' },
+            { id: 'g-goia',        nome: 'GABRIEL G. STENICO',            cargo: 'AUXILIAR PROJETO MECÂNICO JÚNIOR',                    fixo: '+55 19 3302 4770 - R: 219', celular: '',                    email: 'G.GOIA@KUTTNER-NBS.COM.BR' },
+            { id: 'g-quiodi',      nome: 'GABRIEL M. QUIODI',             cargo: 'COORDENADOR DE CONTRATOS',                            fixo: '+55 19 3302 4770 - R: 209', celular: '',                    email: 'G.QUIODI@KUTTNER-NBS.COM.BR' },
+            { id: 'h-nazato',      nome: 'HIAGO NAZATO',                  cargo: 'ANALISTA DE PCP JÚNIOR',                              fixo: '+55 19 3302 4770 - R: 229', celular: '',                    email: 'H.NAZATO@KUTTNER-NBS.COM.BR' },
+            { id: 'l-moises',      nome: 'LEANDRO MOISES',                cargo: 'MONTADOR MECÂNICO PLENO',                             fixo: '+55 19 3302 4770 - R: 239', celular: '',                    email: 'L.MOISES@KUTTNER-NBS.COM.BR' },
+            { id: 'm-capucim',     nome: 'MATHEUS H. CAPUCIM',            cargo: 'COMPRADOR INDUSTRIAL JÚNIOR',                         fixo: '+55 19 3302 4753 - R: 217', celular: '',                    email: 'COMPRAS@KUTTNER-NBS.COM.BR' },
+            { id: 'm-fazanaro',    nome: 'MATEUS FAZANARO',               cargo: 'PROJETISTA MECÂNICO SÊNIOR',                          fixo: '+55 19 3302 4770 - R: 223', celular: '',                    email: 'M.FAZANARO@KUTTNER-NBS.COM.BR' },
+            { id: 'm-gomes',       nome: 'MARIZA RIBEIRO GOMES',          cargo: 'ANALISTA ADMINISTRATIVO PLENO',                       fixo: '+55 19 3302 4770 - R: 201', celular: '+55 19 99130 1200',   email: 'M.GOMES@KUTTNER-NBS.COM.BR' },
+            { id: 'm-silva',       nome: 'MAYCON RAFAEL DA SILVA',        cargo: 'INSPETOR DE QUALIDADE SÊNIOR',                        fixo: '+55 19 3302 4753 - R: 239', celular: '+55 19 99100 9296',   email: 'M.SILVA@KUTTNER-NBS.COM.BR' },
+            { id: 'o-cassemiro',   nome: 'ODIRLEI CASSEMIRO',             cargo: 'GERENTE COMERCIAL / SALES MANAGER',                   fixo: '+55 19 3302 4770 - R: 207', celular: '+55 19 99392 1541',   email: 'O.CASSEMIRO@KUTTNER-NBS.COM.BR' },
+            { id: 'p-cruz',        nome: 'PATRICIA S. A. CRUZ',           cargo: 'SUPERVISOR ADMINISTRATIVO FINANCEIRO',                fixo: '+55 19 3302 4770 - R: 212', celular: '+55 19 99325 6218',   email: 'P.CRUZ@KUTTNER-NBS.COM.BR' },
+            { id: 'r-batistela',   nome: 'RENATO BATISTELA',              cargo: 'COORDENADOR ELÉTRICO AUTOMAÇÃO',                      fixo: '+55 19 3302 4770 - R: 237', celular: '+55 19 99002 2171',   email: 'R.BATISTELA@KUTTNER-NBS.COM.BR' },
+            { id: 'r-boas',        nome: 'RODRIGO PERES VILAS BOAS',      cargo: 'PROJETISTA ELÉTRICO / AUTOMAÇÃO',                     fixo: '+55 19 3302 4770 - R: 236', celular: '+55 19 99002 2186',   email: 'R.BOAS@KUTTNER-NBS.COM.BR' },
+            { id: 'r-correa',      nome: 'ROGER BENTO CORRÊA',            cargo: 'PROJETISTA MECÂNICO PLENO',                            fixo: '+55 19 3302 4770 - R: 218', celular: '',                    email: 'R.CORREA@KUTTNER-NBS.COM.BR' },
+            { id: 'r-roncato',     nome: 'RICARDO A. RONCATO',            cargo: 'PROJETISTA MECÂNICO JÚNIOR',                          fixo: '+55 19 3302 4770 - R: 220', celular: '',                    email: 'R.RONCATO@KUTTNER-NBS.COM.BR' },
+            { id: 's-oliveira',    nome: 'SABRINA SANTOS DE OLIVEIRA',    cargo: 'ANALISTA DE RH PLENO',                                fixo: '+55 19 3302 4770 - R: 211', celular: '',                    email: 'S.OLIVEIRA@KUTTNER-NBS.COM.BR' },
+            { id: 's-pedrozo',     nome: 'SERGIO D. PEDROZO',             cargo: 'SÓCIO DIRETOR',                                       fixo: '+55 19 3302 4770',          celular: '+55 19 99392 1709',   email: 'S.PEDROZO@KUTTNER-NBS.COM.BR' },
+            { id: 'sj-pedrozo',    nome: 'SILVIO JOSÉ PEDROZO',           cargo: 'SUPERVISOR TÉCNICO / TECHNICAL SUPERVISOR',           fixo: '+55 19 3302 4770 - R: 216', celular: '',                    email: 'SJ.PEDROZO@KUTTNER-NBS.COM.BR' },
+            { id: 't-silva',       nome: 'TALITA AMARAL',                 cargo: 'ANALISTA DE COMERCIO EXTERIOR JÚNIOR',                fixo: '+55 19 3302 4770 - R: 210', celular: '',                    email: 'T.SILVA@KUTTNER-NBS.COM.BR' },
+            { id: 't-soto',        nome: 'THIAGO SOTO CALLEGARO',         cargo: 'ANALISTA DE ORÇAMENTOS PLENO',                        fixo: '+55 19 3302 4770 - R: 203', celular: '+55 19 97419 9413',   email: 'T.SOTO@KUTTNER-NBS.COM.BR' },
+            { id: 'v-brito',       nome: 'VICTOR RABELO BRITO',           cargo: 'ANALISTA DE ORÇAMENTOS JÚNIOR',                       fixo: '+55 19 3302 4770 - R: 235', celular: '',                    email: 'V.BRITO@KUTTNER-NBS.COM.BR' },
+            { id: 'w-cunha',       nome: 'WAGNER LUIS DA CUNHA',          cargo: 'PROJETISTA ELÉTRICO / AUTOMAÇÃO',                     fixo: '+55 19 3302 4770 - R: 236', celular: '+55 19 99002 2010',   email: 'W.CUNHA@KUTTNER-NBS.COM.BR' }
+        ];
+
+        let funcionarios = [];
+
+        function carregarFuncionarios() {
+            try {
+                const salvo = localStorage.getItem(STORAGE_KEY);
+                if (salvo) {
+                    funcionarios = JSON.parse(salvo);
+                    return;
+                }
+            } catch (e) {
+                console.warn('Erro ao carregar funcionários:', e);
+            }
+            funcionarios = FUNCIONARIOS_PADRAO.map(f => ({ ...f }));
+            salvarFuncionariosStorage();
+        }
+
+        function salvarFuncionariosStorage() {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(funcionarios));
+        }
+
+        function gerarId(nome) {
+            const base = nome.normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+                .toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+            let id = base;
+            let i = 2;
+            while (funcionarios.some(f => f.id === id)) {
+                id = base + '-' + i++;
+            }
+            return id;
+        }
+
+        function ordenarFuncionarios() {
+            funcionarios.sort((a, b) => a.nome.localeCompare(b.nome, 'pt-BR'));
+        }
+
+        function atualizarSelectFuncionarios(manterSelecao) {
+            const select = document.getElementById('selectFuncionario');
+            const valorAtual = manterSelecao ? select.value : '';
+            ordenarFuncionarios();
+            select.innerHTML = '<option value="">— Selecione um funcionário —</option>';
+            funcionarios.forEach(f => {
+                const opt = document.createElement('option');
+                opt.value = f.id;
+                opt.textContent = f.nome;
+                select.appendChild(opt);
+            });
+            if (valorAtual && funcionarios.some(f => f.id === valorAtual)) {
+                select.value = valorAtual;
+            }
+        }
+
+        function preencherCamposFuncionario(func) {
+            document.getElementById('inputNome').value = func.nome;
+            document.getElementById('inputCargo').value = func.cargo;
+            document.getElementById('inputFixo').value = func.fixo || '';
+            document.getElementById('inputCelular').value = func.celular || '';
+            document.getElementById('inputEmail').value = func.email || '';
+        }
+
+        function aplicarFuncionarioSelecionado() {
+            const id = document.getElementById('selectFuncionario').value;
+            if (!id) return;
+            const func = funcionarios.find(f => f.id === id);
+            if (!func) return;
+            preencherCamposFuncionario(func);
+            gerarAssinatura();
+        }
+
+        function desbloquearAdmin() {
+            const pin = document.getElementById('inputAdmPin').value;
+            if (pin !== ADM_PIN) {
+                alert('PIN incorreto.');
+                return;
+            }
+            document.getElementById('admBloqueado').classList.remove('ativo');
+            document.getElementById('admPainel').classList.add('ativo');
+            document.getElementById('inputAdmPin').value = '';
+            renderizarListaAdmin();
+        }
+
+        function bloquearAdmin() {
+            document.getElementById('admBloqueado').classList.add('ativo');
+            document.getElementById('admPainel').classList.remove('ativo');
+            limparFormAdmin();
+        }
+
+        function limparFormAdmin() {
+            document.getElementById('admEditId').value = '';
+            document.getElementById('admNome').value = '';
+            document.getElementById('admCargo').value = '';
+            document.getElementById('admFixo').value = '';
+            document.getElementById('admCelular').value = '';
+            document.getElementById('admEmail').value = '';
+            document.getElementById('admFormTitulo').textContent = 'Adicionar Funcionário';
+            document.getElementById('admMsg').style.display = 'none';
+        }
+
+        function mostrarMsgAdmin(texto) {
+            const el = document.getElementById('admMsg');
+            el.textContent = texto;
+            el.style.display = 'block';
+            setTimeout(() => { el.style.display = 'none'; }, 3000);
+        }
+
+        function salvarFuncionarioAdmin() {
+            const nome = document.getElementById('admNome').value.trim().toUpperCase();
+            const cargo = document.getElementById('admCargo').value.trim().toUpperCase();
+            const fixo = document.getElementById('admFixo').value.trim();
+            const celular = document.getElementById('admCelular').value.trim();
+            const email = document.getElementById('admEmail').value.trim().toUpperCase();
+            const editId = document.getElementById('admEditId').value;
+
+            if (!nome || !cargo || !fixo || !email) {
+                alert('Preencha nome, cargo, fixo e e-mail.');
+                return;
+            }
+
+            if (editId) {
+                const idx = funcionarios.findIndex(f => f.id === editId);
+                if (idx >= 0) {
+                    funcionarios[idx] = { id: editId, nome, cargo, fixo, celular, email };
+                    mostrarMsgAdmin('Funcionário atualizado com sucesso!');
+                }
+            } else {
+                const id = gerarId(nome);
+                funcionarios.push({ id, nome, cargo, fixo, celular, email });
+                mostrarMsgAdmin('Funcionário adicionado com sucesso!');
+            }
+
+            salvarFuncionariosStorage();
+            atualizarSelectFuncionarios(true);
+            renderizarListaAdmin();
+            limparFormAdmin();
+        }
+
+        function editarFuncionarioAdmin(id) {
+            const func = funcionarios.find(f => f.id === id);
+            if (!func) return;
+            document.getElementById('admEditId').value = func.id;
+            document.getElementById('admNome').value = func.nome;
+            document.getElementById('admCargo').value = func.cargo;
+            document.getElementById('admFixo').value = func.fixo;
+            document.getElementById('admCelular').value = func.celular || '';
+            document.getElementById('admEmail').value = func.email;
+            document.getElementById('admFormTitulo').textContent = 'Editar Funcionário';
+            document.getElementById('admNome').focus();
+        }
+
+        function excluirFuncionarioAdmin(id) {
+            const func = funcionarios.find(f => f.id === id);
+            if (!func) return;
+            if (!confirm('Excluir "' + func.nome + '" do cadastro?')) return;
+            funcionarios = funcionarios.filter(f => f.id !== id);
+            salvarFuncionariosStorage();
+            atualizarSelectFuncionarios(false);
+            if (document.getElementById('selectFuncionario').value === id) {
+                document.getElementById('selectFuncionario').value = '';
+            }
+            renderizarListaAdmin();
+            mostrarMsgAdmin('Funcionário removido.');
+        }
+
+        function renderizarListaAdmin() {
+            const lista = document.getElementById('listaFuncionariosAdmin');
+            document.getElementById('admTotal').textContent = funcionarios.length;
+            ordenarFuncionarios();
+            lista.innerHTML = funcionarios.map(f => `
+                <div class="item-funcionario">
+                    <span><strong>${f.nome}</strong><br><span style="color:#888;font-size:11px;">${f.cargo}</span></span>
+                    <div>
+                        <button type="button" onclick="editarFuncionarioAdmin('${f.id}')">Editar</button>
+                        <button type="button" onclick="excluirFuncionarioAdmin('${f.id}')">Excluir</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function exportarFuncionarios() {
+            const blob = new Blob([JSON.stringify(funcionarios, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'funcionarios-knbs.json';
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        function importarFuncionarios(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                try {
+                    const dados = JSON.parse(e.target.result);
+                    if (!Array.isArray(dados)) throw new Error('Formato inválido');
+                    funcionarios = dados.map(f => ({
+                        id: f.id || gerarId(f.nome || 'funcionario'),
+                        nome: (f.nome || '').toUpperCase(),
+                        cargo: (f.cargo || '').toUpperCase(),
+                        fixo: f.fixo || '',
+                        celular: f.celular || '',
+                        email: (f.email || '').toUpperCase()
+                    }));
+                    salvarFuncionariosStorage();
+                    atualizarSelectFuncionarios(false);
+                    renderizarListaAdmin();
+                    mostrarMsgAdmin('Lista importada com sucesso!');
+                } catch (err) {
+                    alert('Erro ao importar: ' + err.message);
+                }
+                event.target.value = '';
+            };
+            reader.readAsText(file);
+        }
+
+        function restaurarPadraoFuncionarios() {
+            if (!confirm('Restaurar a lista padrão? Isso substitui todos os cadastros atuais.')) return;
+            funcionarios = FUNCIONARIOS_PADRAO.map(f => ({ ...f }));
+            salvarFuncionariosStorage();
+            atualizarSelectFuncionarios(false);
+            renderizarListaAdmin();
+            mostrarMsgAdmin('Lista padrão restaurada.');
+        }
+
+        carregarFuncionarios();
+        atualizarSelectFuncionarios(false);
+        inicializarUrlFundo();
+
+        document.querySelectorAll('.aba-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.aba-btn').forEach(b => b.classList.remove('ativa'));
+                document.querySelectorAll('.aba-conteudo').forEach(c => c.classList.remove('ativa'));
+                btn.classList.add('ativa');
+                document.getElementById('aba-' + btn.dataset.aba).classList.add('ativa');
+            });
+        });
+
+        document.fonts.ready.then(() => {
+            sincronizarLarguraTextoRef();
+            const piccoli = funcionarios.find(f => f.id === 'e-piccoli');
+            if (piccoli) {
+                document.getElementById('selectFuncionario').value = 'e-piccoli';
+                preencherCamposFuncionario(piccoli);
+            }
+            gerarAssinatura();
+        });
+
+        function inicializarUrlFundo() {
+            const salvo = localStorage.getItem(STORAGE_KEY_FUNDO);
+            document.getElementById('inputUrlFundo').value = salvo || urlFundoPadrao;
+        }
+
+        function obterUrlFundo() {
+            const url = document.getElementById('inputUrlFundo').value.trim();
+            return url || urlFundoPadrao;
+        }
+
+        function aplicarUrlFundo() {
+            const url = obterUrlFundo();
+            document.getElementById('inputUrlFundo').value = url;
+            localStorage.setItem(STORAGE_KEY_FUNDO, url);
+            gerarAssinatura();
+        }
+
+        function sincronizarMargemEsquerda(valor) {
+            const max = lerDimensoesTextoRef().width;
+            const num = Math.min(max, Math.max(0, parseInt(valor, 10) || DEFAULTS.margemEsquerda));
+            document.getElementById('inputMargemEsquerda').value = num;
+            document.getElementById('inputMargemEsquerdaSlider').value = Math.min(num, 800);
+            document.getElementById('inputMargemEsquerdaSlider').max = Math.min(max, 800);
+            gerarAssinatura();
+        }
+
+        function lerMargemEsquerda() {
+            return parseInt(document.getElementById('inputMargemEsquerda').value, 10) || DEFAULTS.margemEsquerda;
+        }
+
+        function lerPosicaoYNome() {
+            return parseInt(document.getElementById('inputPosicaoY').value, 10) || DEFAULTS.posicaoYNome;
+        }
+
+        function lerDimensoesImagem() {
+            return {
+                width:  parseInt(document.getElementById('inputImgWidth').value, 10)  || DEFAULTS.imagem.width,
+                height: parseInt(document.getElementById('inputImgHeight').value, 10) || DEFAULTS.imagem.height
+            };
+        }
+
+        function calcularLarguraTextoRef() {
+            const exibirW = parseInt(document.getElementById('inputWidth').value, 10) || DEFAULTS.exibir.width;
+            return Math.round(exibirW * FATOR_LARGURA_TEXTO);
+        }
+
+        function sincronizarLarguraTextoRef() {
+            const w = calcularLarguraTextoRef();
+            document.getElementById('inputTextRefWidth').value = w;
+            return w;
+        }
+
+        function onExibirLarguraChange() {
+            sincronizarLarguraTextoRef();
+            gerarAssinatura();
+        }
+
+        function lerDimensoesTextoRef() {
+            const width = sincronizarLarguraTextoRef();
+            let height;
+            if (document.getElementById('checkTextoIgualImagem').checked) {
+                height = lerDimensoesImagem().height;
+                document.getElementById('inputTextRefHeight').value = height;
+            } else {
+                height = parseInt(document.getElementById('inputTextRefHeight').value, 10) || DEFAULTS.textoRef.height;
+            }
+            return { width, height };
+        }
+
+        function toggleTextoIgualImagem() {
+            const igual = document.getElementById('checkTextoIgualImagem').checked;
+            document.getElementById('inputTextRefHeight').disabled = igual;
+            if (igual) {
+                document.getElementById('inputTextRefHeight').value = lerDimensoesImagem().height;
+            }
+            gerarAssinatura();
+        }
+
+        function onDimensaoImagemChange() {
+            if (document.getElementById('checkTextoIgualImagem').checked) {
+                document.getElementById('inputTextRefHeight').value = lerDimensoesImagem().height;
+            }
+            gerarAssinatura();
+        }
+
+        function atualizarInfoEscala(imgW, imgH, textW, textH) {
+            const sx = (imgW / textW).toFixed(3);
+            const sy = (imgH / textH).toFixed(3);
+            const el = document.getElementById('infoEscala');
+            if (imgW === textW && imgH === textH) {
+                el.textContent = 'Escala texto→imagem: 1.000× (sem redimensionamento)';
+            } else {
+                el.textContent = `Escala texto→imagem: ${sx}× horizontal | ${sy}× vertical`;
+            }
+        }
+
+        function montarFonte(tamanho, bold) {
+            const peso = bold ? 'bold' : 'normal';
+            return `${peso} ${tamanho}px "Open Sans", sans-serif`;
+        }
+
+        function lerEstilos() {
+            return {
+                nome: {
+                    tamanho:  parseInt(document.getElementById('inputNomeTamanho').value, 10)    || DEFAULTS.nome.tamanho,
+                    cor:      document.getElementById('inputNomeCor').value,
+                    bold:     document.getElementById('inputNomeBold').checked
+                },
+                cargo: {
+                    tamanho:  parseInt(document.getElementById('inputCargoTamanho').value, 10)   || DEFAULTS.cargo.tamanho,
+                    cor:      document.getElementById('inputCargoCor').value,
+                    bold:     document.getElementById('inputCargoBold').checked,
+                    maxWidth: parseInt(document.getElementById('inputCargoMaxWidth').value, 10) || DEFAULTS.cargo.maxWidth
+                },
+                contato: {
+                    tamanho: parseInt(document.getElementById('inputContatoTamanho').value, 10) || DEFAULTS.contato.tamanho,
+                    cor:     document.getElementById('inputContatoCor').value,
+                    bold:    document.getElementById('inputContatoBold').checked
+                }
+            };
+        }
+
+        function wrapText(ctx, text, x, y, maxWidth, lineHeight) {
+            const words = text.split(' ');
+            let line = '';
+            let currentY = y;
+
+            for (let n = 0; n < words.length; n++) {
+                const testLine = line + words[n] + ' ';
+                const testWidth = ctx.measureText(testLine).width;
+
+                if (testWidth > maxWidth && n > 0) {
+                    ctx.fillText(line.trim(), x, currentY);
+                    line = words[n] + ' ';
+                    currentY += lineHeight;
+                } else {
+                    line = testLine;
+                }
+            }
+            ctx.fillText(line.trim(), x, currentY);
+            return currentY;
+        }
+
+        function desenharLinhaFixo(ctx, fixo, x, y, estilo) {
+            const valorBold = estilo.bold;
+            ctx.fillStyle = estilo.cor;
+            let cursorX = x;
+
+            ctx.font = montarFonte(estilo.tamanho, true);
+            ctx.fillText('T: ', cursorX, y);
+            cursorX += ctx.measureText('T: ').width;
+
+            const match = fixo.match(/^(.+?)(\s*-\s*|\s+)(R:\s*)(.+)$/i);
+            if (match) {
+                const [, telefone, separador, labelR, ramal] = match;
+
+                ctx.font = montarFonte(estilo.tamanho, valorBold);
+                ctx.fillText(telefone, cursorX, y);
+                cursorX += ctx.measureText(telefone).width;
+
+                ctx.font = montarFonte(estilo.tamanho, valorBold);
+                ctx.fillText(separador, cursorX, y);
+                cursorX += ctx.measureText(separador).width;
+
+                ctx.font = montarFonte(estilo.tamanho, true);
+                ctx.fillText(labelR.toUpperCase(), cursorX, y);
+                cursorX += ctx.measureText(labelR.toUpperCase()).width;
+
+                ctx.font = montarFonte(estilo.tamanho, valorBold);
+                ctx.fillText(ramal, cursorX, y);
+            } else {
+                ctx.font = montarFonte(estilo.tamanho, valorBold);
+                ctx.fillText(fixo, cursorX, y);
+            }
+        }
+
+        function desenharLinhaContato(ctx, prefixo, valor, x, y, estilo) {
+            const labelBold = true;
+            const valorBold = estilo.bold;
+
+            ctx.fillStyle = estilo.cor;
+            ctx.font = montarFonte(estilo.tamanho, labelBold);
+            ctx.fillText(prefixo, x, y);
+            const larguraPrefixo = ctx.measureText(prefixo).width;
+
+            ctx.font = montarFonte(estilo.tamanho, valorBold);
+            ctx.fillText(valor, x + larguraPrefixo, y);
+        }
+
+        function gerarAssinatura() {
+            const canvas = document.getElementById('meuCanvas');
+            const ctx = canvas.getContext('2d');
+            const containerHtml = document.getElementById('preview-container');
+
+            const nome    = document.getElementById('inputNome').value.toUpperCase();
+            const cargo   = document.getElementById('inputCargo').value.toUpperCase();
+            const fixo    = document.getElementById('inputFixo').value;
+            const celular = document.getElementById('inputCelular').value;
+            const email   = document.getElementById('inputEmail').value.toUpperCase();
+            const w       = document.getElementById('inputWidth').value;
+            const h       = document.getElementById('inputHeight').value;
+
+            const estilos = lerEstilos();
+            const margemEsquerda = lerMargemEsquerda();
+            const posicaoY = lerPosicaoYNome();
+            const imgDim = lerDimensoesImagem();
+            const textRef = lerDimensoesTextoRef();
+            const escalaX = imgDim.width / textRef.width;
+            const escalaY = imgDim.height / textRef.height;
+            const lineHeightCargo = Math.round(estilos.cargo.tamanho * 1.22);
+            const espacamentoLinha  = Math.round(estilos.contato.tamanho * 1.22);
+
+            atualizarInfoEscala(imgDim.width, imgDim.height, textRef.width, textRef.height);
+
+            const fundo = new Image();
+            fundo.crossOrigin = 'Anonymous';
+            fundo.src = obterUrlFundo();
+
+            fundo.onerror = function () {
+                alert('Não foi possível carregar a imagem de fundo. Verifique o link do Cloudinary na aba Layout.');
+            };
+
+            fundo.onload = function () {
+                canvas.width = imgDim.width;
+                canvas.height = imgDim.height;
+
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                ctx.drawImage(fundo, 0, 0, imgDim.width, imgDim.height);
+
+                ctx.save();
+                ctx.scale(escalaX, escalaY);
+
+                let cursorY = posicaoY;
+
+                ctx.fillStyle = estilos.nome.cor;
+                ctx.font = montarFonte(estilos.nome.tamanho, estilos.nome.bold);
+                ctx.fillText(nome, margemEsquerda, cursorY);
+
+                cursorY += Math.round(estilos.nome.tamanho * 0.86) + lineHeightCargo;
+                ctx.fillStyle = estilos.cargo.cor;
+                ctx.font = montarFonte(estilos.cargo.tamanho, estilos.cargo.bold);
+                cursorY = wrapText(ctx, cargo, margemEsquerda, cursorY, estilos.cargo.maxWidth, lineHeightCargo);
+
+                cursorY += Math.round(estilos.cargo.tamanho * 1.33);
+                ctx.fillStyle = estilos.cargo.cor;
+                ctx.font = montarFonte(estilos.cargo.tamanho, estilos.cargo.bold);
+                ctx.fillText('KUTTNER NO-BAKE SOLUTIONS', margemEsquerda, cursorY);
+
+                cursorY += Math.round(estilos.contato.tamanho * 2.33);
+
+                if (fixo) {
+                    desenharLinhaFixo(ctx, fixo, margemEsquerda, cursorY, estilos.contato);
+                    cursorY += espacamentoLinha;
+                }
+                if (celular) {
+                    desenharLinhaContato(ctx, 'C: ', celular, margemEsquerda, cursorY, estilos.contato);
+                    cursorY += espacamentoLinha;
+                }
+                if (email) {
+                    desenharLinhaContato(ctx, 'E: ', email, margemEsquerda, cursorY, estilos.contato);
+                }
+
+                ctx.restore();
+
+                const imgGerada = canvas.toDataURL('image/png');
+                containerHtml.innerHTML = montarHtmlPreview(imgGerada, w, h);
+            };
+        }
+
+        function montarImagemOutlookFixa(imgSrc, w, h) {
+            const estiloImg = [
+                'display:block',
+                `width:${w}px !important`,
+                `max-width:${w}px !important`,
+                `min-width:${w}px !important`,
+                `height:${h}px !important`,
+                `max-height:${h}px !important`,
+                `min-height:${h}px !important`,
+                'border:0',
+                'outline:none',
+                'text-decoration:none',
+                'margin:0',
+                'padding:0',
+                'line-height:0',
+                'font-size:0',
+                '-ms-interpolation-mode:bicubic'
+            ].join(';');
+
+            const estiloCaixa = [
+                `width:${w}px !important`,
+                `max-width:${w}px !important`,
+                `min-width:${w}px !important`,
+                `height:${h}px !important`,
+                `max-height:${h}px !important`,
+                `min-height:${h}px !important`,
+                'overflow:hidden',
+                'line-height:0',
+                'font-size:0',
+                'margin:0',
+                'padding:0'
+            ].join(';');
+
+            const estiloCelula = [
+                `width:${w}px !important`,
+                `max-width:${w}px !important`,
+                `min-width:${w}px !important`,
+                `height:${h}px !important`,
+                `max-height:${h}px !important`,
+                `min-height:${h}px !important`,
+                'padding:0',
+                'margin:0',
+                'line-height:0',
+                'font-size:0'
+            ].join(';');
+
+            const estiloTabela = [
+                `width:${w}px !important`,
+                `max-width:${w}px !important`,
+                `min-width:${w}px !important`,
+                `height:${h}px !important`,
+                `max-height:${h}px !important`,
+                `min-height:${h}px !important`,
+                'mso-table-lspace:0pt',
+                'mso-table-rspace:0pt',
+                'border-collapse:collapse',
+                'table-layout:fixed'
+            ].join(';');
+
+            return `<!--[if mso]>
+<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="${w}" height="${h}" style="${estiloTabela}">
+<tr><td width="${w}" height="${h}" valign="top" style="${estiloCelula}">
+<![endif]-->
+<div style="${estiloCaixa}">
+<img src="${imgSrc}" width="${w}" height="${h}" alt="Assinatura KNBS" border="0" style="${estiloImg}">
+</div>
+<!--[if mso]>
+</td></tr></table>
+<![endif]-->`;
+        }
+
+        function montarHtmlPreview(imgSrc, w, h) {
+            return `
+                <div style="font-family: 'Open Sans', Arial, sans-serif; color: #000000; line-height: 1.2;">
+                    <p style="margin: 0 0 15px 0; padding: 0; font-size: 12pt;">Atenciosamente,</p>
+                    <div style="margin: 0; padding: 0;">
+                        ${montarImagemOutlookFixa(imgSrc, w, h)}
+                    </div>
+                    <p style="margin: 0; padding: 0; font-size: 11pt;">
+                        <b style="color: #555555;">Visite nosso site: </b>
+                        <a href="https://www.kuttner-nbs.com.br" style="font-weight: bold; text-decoration: underline; color: #0563C1;">www.kuttner-nbs.com.br</a>
+                    </p>
+                </div>
+            `;
+        }
+
+        async function copiarAssinaturaAPI() {
+            const btn = document.getElementById('btnCopiar');
+            const textoOriginal = btn.innerText;
+            const w = document.getElementById('inputWidth').value;
+            const h = document.getElementById('inputHeight').value;
+            const canvas = document.getElementById('meuCanvas');
+            const imgBase64 = canvas.toDataURL('image/png');
+
+            btn.innerText = 'A enviar para a nuvem...';
+            btn.disabled = true;
+
+            try {
+                const formData = new FormData();
+                formData.append('file', imgBase64);
+                formData.append('upload_preset', uploadPreset);
+
+                const response = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/image/upload`, {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const data = await response.json();
+
+                if (!data.secure_url) {
+                    throw new Error('Erro no upload. Verifique se criou o Upload Preset corretamente.');
+                }
+
+                const urlImagemNuvem = data.secure_url;
+
+                const htmlFinal = `
+                    <div style="font-family: 'Open Sans', Arial, sans-serif; color: #000000; line-height: 1.2;">
+                        <p style="margin: 0 0 15px 0; padding: 0; font-size: 12pt;">Atenciosamente,</p>
+                        <div style="margin: 0; padding: 0;">
+                            ${montarImagemOutlookFixa(urlImagemNuvem, w, h)}
+                        </div>
+                        <p style="margin: 0; padding: 0; font-size: 11pt;">
+                            <b style="color: #555555;">Visite nosso site: </b>
+                            <a href="https://www.kuttner-nbs.com.br" style="font-weight: bold; text-decoration: underline; color: #0563C1;">www.kuttner-nbs.com.br</a>
+                        </p>
+                        <p style="margin: 0; padding: 0; font-size: 7.5pt; color: #555555; text-align: justify; line-height: 1.0;">
+                            A KNBS No-Bake Solutions não envia declarações de cunho legal via e-mail. As mensagens enviadas, bem como seus anexos, são destinadas ao uso exclusivo de seu destinatário, pois podem conter informações confidenciais e privilegiadas, passíveis de sigilo protegido por lei. Informamos que toda e qualquer divulgação, distribuição, cópia ou outro uso indevido da mesma, seu conteúdo ou seus anexos são estritamente proibidos. Caso tenha recebido esta mensagem por engano ou teve acesso a ela por qualquer meio, por favor, notifique o remetente e apague-a imediatamente. Informamos, ainda, que esta mensagem foi verificada por sistema de antivírus ao ser enviada, porém, não nos responsabilizamos pela sua contaminação por qualquer tipo de vírus.
+                        </p>
+                    </div>
+                `;
+
+                const clipboardItem = new ClipboardItem({
+                    'text/html': new Blob([htmlFinal], { type: 'text/html' }),
+                    'text/plain': new Blob(['Atenciosamente, Kuttner NBS'], { type: 'text/plain' })
+                });
+
+                await navigator.clipboard.write([clipboardItem]);
+                alert('Assinatura copiada com sucesso! Pode colar no Outlook sem perder a transparência.');
+
+            } catch (error) {
+                console.error(error);
+                alert('Ocorreu um erro: ' + error.message);
+            } finally {
+                btn.innerText = textoOriginal;
+                btn.disabled = false;
+            }
+        }
+    </script>
+</body>
+</html>
