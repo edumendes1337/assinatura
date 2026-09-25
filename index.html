@@ -1254,19 +1254,21 @@
                 const urlImagemNuvem = data.secure_url;
 
                 const htmlFinal = `
-                    <div style="font-family: 'Open Sans', Arial, sans-serif; color: #000000; line-height: 1.2;">
-                        <p style="margin: 0 0 15px 0; padding: 0; font-size: 12pt;">Atenciosamente,</p>
-                        <div style="margin: 0; padding: 0;">
-                            ${montarImagemOutlookFixa(urlImagemNuvem, w, h)}
-                        </div>
-                        <p style="margin: 0; padding: 0; font-size: 11pt;">
-                            <b style="color: #555555;">Visite nosso site: </b>
-                            <a href="https://www.kuttner-nbs.com.br" style="font-weight: bold; text-decoration: underline; color: #0563C1;">www.kuttner-nbs.com.br</a>
+                    <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="${w}" align="left" style="width:${w}px; max-width:${w}px; border-collapse:collapse; mso-table-lspace:0pt; mso-table-rspace:0pt;">
+                    <tr>
+                    <td width="${w}" valign="top" style="width:${w}px; max-width:${w}px; padding:0; margin:0; font-family:Arial, sans-serif; color:#000000;">
+                        <p style="margin:0 0 15px 0; padding:0; font-size:12pt; line-height:16pt; font-family:Arial, sans-serif;">Atenciosamente,</p>
+                        ${montarImagemOutlookFixa(urlImagemNuvem, w, h)}
+                        <p style="margin:8px 0 0 0; padding:0; font-size:11pt; line-height:14pt; font-family:Arial, sans-serif;">
+                            <b style="color:#555555;">Visite nosso site: </b>
+                            <a href="https://www.kuttner-nbs.com.br" style="font-weight:bold; text-decoration:underline; color:#0563C1;">www.kuttner-nbs.com.br</a>
                         </p>
-                        <p style="margin: 0; padding: 0; font-size: 7.5pt; color: #555555; text-align: justify; line-height: 1.0;">
+                        <p style="margin:6px 0 0 0; padding:0; font-size:8pt; line-height:11pt; mso-line-height-rule:exactly; font-family:Arial, sans-serif; color:#555555; text-align:left;">
                             A KNBS No-Bake Solutions não envia declarações de cunho legal via e-mail. As mensagens enviadas, bem como seus anexos, são destinadas ao uso exclusivo de seu destinatário, pois podem conter informações confidenciais e privilegiadas, passíveis de sigilo protegido por lei. Informamos que toda e qualquer divulgação, distribuição, cópia ou outro uso indevido da mesma, seu conteúdo ou seus anexos são estritamente proibidos. Caso tenha recebido esta mensagem por engano ou teve acesso a ela por qualquer meio, por favor, notifique o remetente e apague-a imediatamente. Informamos, ainda, que esta mensagem foi verificada por sistema de antivírus ao ser enviada, porém, não nos responsabilizamos pela sua contaminação por qualquer tipo de vírus.
                         </p>
-                    </div>
+                    </td>
+                    </tr>
+                    </table>
                 `;
 
                 const clipboardItem = new ClipboardItem({
