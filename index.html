@@ -547,7 +547,9 @@
 
         <div class="painel-acoes">
             <button class="acao-principal" type="button" onclick="gerarAssinatura()">Atualizar Visualização</button>
-            <button id="btnCopiar" class="acao-principal acao-copiar" type="button" onclick="copiarAssinaturaAPI()">Copiar Tudo para o Outlook</button>
+            <button id="btnCopiarWeb" class="acao-principal acao-copiar" type="button" onclick="copiarAssinatura('web')">Copiar para o Outlook Web</button>
+            <button id="btnCopiarApp" class="acao-principal acao-copiar" type="button" onclick="copiarAssinatura('app')">Copiar para o Outlook aplicativo</button>
+            <span class="dica-campo">Cada botão copia o HTML do programa em que a assinatura será colada.</span>
         </div>
     </div>
 
@@ -1140,24 +1142,89 @@
 
         const AVISO_LEGAL = 'A KNBS No-Bake Solutions não envia declarações de cunho legal via e-mail. As mensagens enviadas, bem como seus anexos, são destinadas ao uso exclusivo de seu destinatário, pois podem conter informações confidenciais e privilegiadas, passíveis de sigilo protegido por lei. Informamos que toda e qualquer divulgação, distribuição, cópia ou outro uso indevido da mesma, seu conteúdo ou seus anexos são estritamente proibidos. Caso tenha recebido esta mensagem por engano ou teve acesso a ela por qualquer meio, por favor, notifique o remetente e apague-a imediatamente. Informamos, ainda, que esta mensagem foi verificada por sistema de antivírus ao ser enviada, porém, não nos responsabilizamos pela sua contaminação por qualquer tipo de vírus.';
 
-        function montarImagemOutlookFixa(imgSrc, w, h) {
-            return `<img src="${imgSrc}" width="${w}" height="${h}" alt="Assinatura KNBS" border="0" style="display:block; width:${w}px; height:${h}px; border:0; outline:none; text-decoration:none; margin:0; padding:0;">`;
+        function canvasNoTamanhoDeExibicao(origem, w, h) {
+            const largura = Math.max(1, parseInt(w, 10) || origem.width);
+            const altura = Math.max(1, parseInt(h, 10) || origem.height);
+            const destino = document.createElement('canvas');
+            destino.width = largura;
+            destino.height = altura;
+            const ctx = destino.getContext('2d');
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(0, 0, destino.width, destino.height);
+            ctx.drawImage(origem, 0, 0, largura, altura);
+            return destino.toDataURL('image/png');
         }
 
-        function montarHtmlAssinatura(imgSrc, w, h) {
+        function montarImagemOutlookWeb(imgSrc, w, h) {
+            const estiloImg = [
+                'display:block',
+                `width:${w}px !important`,
+                `max-width:${w}px !important`,
+                `min-width:${w}px !important`,
+                `height:${h}px !important`,
+                `min-height:${h}px !important`,
+                'border:0',
+                'outline:none',
+                'text-decoration:none',
+                'margin:0',
+                'padding:0',
+                '-ms-interpolation-mode:bicubic'
+            ].join(';');
+
+            const estiloCaixa = [
+                `width:${w}px !important`,
+                `max-width:${w}px !important`,
+                `min-width:${w}px !important`,
+                'margin:0',
+                'padding:0'
+            ].join(';');
+
+            return `<!--[if mso]>
+<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="${w}" style="width:${w}px; border-collapse:collapse; mso-table-lspace:0pt; mso-table-rspace:0pt;">
+<tr><td width="${w}" valign="top" style="width:${w}px; padding:0; margin:0;">
+<![endif]-->
+<div style="${estiloCaixa}">
+<img src="${imgSrc}" width="${w}" height="${h}" alt="Assinatura KNBS" border="0" style="${estiloImg}">
+</div>
+<!--[if mso]>
+</td></tr></table>
+<![endif]-->`;
+        }
+
+        function montarImagemOutlookApp(imgSrc, w, h) {
+            return `<img src="${imgSrc}" width="${w}" height="${h}" alt="Assinatura KNBS" border="0" style="display:block; width:${w}px; height:${h}px; border:0; outline:none; text-decoration:none; -ms-interpolation-mode:bicubic;">`;
+        }
+
+        function montarHtmlWeb(imgSrc, w, h) {
             return `
-                <div style="font-family:'Open Sans', Arial, sans-serif; color:#000000; line-height:1.2;">
-                    <p style="margin:0 0 15px 0; padding:0; font-size:12pt;">Atenciosamente,</p>
-                    <div style="margin:0; padding:0;">
-                        ${montarImagemOutlookFixa(imgSrc, w, h)}
+                <div style="font-family: 'Open Sans', Arial, sans-serif; color: #000000; line-height: 1.2;">
+                    <p style="margin: 0 0 15px 0; padding: 0; font-size: 12pt;">Atenciosamente,</p>
+                    <div style="margin: 0; padding: 0;">
+                        ${montarImagemOutlookWeb(imgSrc, w, h)}
                     </div>
-                    <p style="margin:0; padding:0; font-size:11pt;">
+                    <p style="margin: 0; padding: 0; font-size: 11pt;">
+                        <b style="color: #555555;">Visite nosso site: </b>
+                        <a href="https://www.kuttner-nbs.com.br" style="font-weight: bold; text-decoration: underline; color: #0563C1;">www.kuttner-nbs.com.br</a>
+                    </p>
+                    <p style="margin: 0; padding: 0; font-size: 7.5pt; color: #555555; text-align: justify; line-height: 1.0;">
+                        ${AVISO_LEGAL}
+                    </p>
+                </div>
+            `;
+        }
+
+        function montarHtmlAplicativo(imgSrc, w, h) {
+            return `
+                <div style="font-family:Arial, sans-serif; color:#000000;">
+                    <p style="margin:0 0 15px 0; padding:0; font-size:12pt; line-height:16pt; font-family:Arial, sans-serif;">Atenciosamente,</p>
+                    ${montarImagemOutlookApp(imgSrc, w, h)}
+                    <p style="margin:8px 0 0 0; padding:0; font-size:11pt; line-height:14pt; font-family:Arial, sans-serif;">
                         <b style="color:#555555;">Visite nosso site: </b>
                         <a href="https://www.kuttner-nbs.com.br" style="font-weight:bold; text-decoration:underline; color:#0563C1;">www.kuttner-nbs.com.br</a>
                     </p>
                     <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="${w}" style="width:${w}px; border-collapse:collapse; mso-table-lspace:0pt; mso-table-rspace:0pt;">
                         <tr>
-                            <td width="${w}" valign="top" style="width:${w}px; padding:0; margin:0; font-family:'Open Sans', Arial, sans-serif; font-size:7.5pt; line-height:10pt; color:#555555; text-align:justify;">
+                            <td width="${w}" valign="top" style="width:${w}px; padding:0; margin:0; font-family:Arial, sans-serif; font-size:7.5pt; line-height:10pt; color:#555555; text-align:justify;">
                                 ${AVISO_LEGAL}
                             </td>
                         </tr>
@@ -1167,19 +1234,22 @@
         }
 
         function montarHtmlPreview(imgSrc, w, h) {
-            return montarHtmlAssinatura(imgSrc, w, h);
+            return montarHtmlWeb(imgSrc, w, h);
         }
 
-        async function copiarAssinaturaAPI() {
-            const btn = document.getElementById('btnCopiar');
-            const textoOriginal = btn.innerText;
+        async function copiarAssinatura(destino) {
+            const btnWeb = document.getElementById('btnCopiarWeb');
+            const btnApp = document.getElementById('btnCopiarApp');
+            const botoes = [btnWeb, btnApp];
+            const textos = botoes.map((botao) => botao.innerText);
+            const btn = destino === 'app' ? btnApp : btnWeb;
             const w = document.getElementById('inputWidth').value;
             const h = document.getElementById('inputHeight').value;
             const canvas = document.getElementById('meuCanvas');
-            const imgBase64 = canvas.toDataURL('image/png');
+            const imgBase64 = canvasNoTamanhoDeExibicao(canvas, w, h);
 
+            botoes.forEach((botao) => { botao.disabled = true; });
             btn.innerText = 'A enviar para a nuvem...';
-            btn.disabled = true;
 
             try {
                 const formData = new FormData();
@@ -1197,9 +1267,9 @@
                     throw new Error('Erro no upload. Verifique se criou o Upload Preset corretamente.');
                 }
 
-                const urlImagemNuvem = data.secure_url;
-
-                const htmlFinal = montarHtmlAssinatura(urlImagemNuvem, w, h);
+                const htmlFinal = destino === 'app'
+                    ? montarHtmlAplicativo(data.secure_url, w, h)
+                    : montarHtmlWeb(data.secure_url, w, h);
 
                 const clipboardItem = new ClipboardItem({
                     'text/html': new Blob([htmlFinal], { type: 'text/html' }),
@@ -1207,14 +1277,18 @@
                 });
 
                 await navigator.clipboard.write([clipboardItem]);
-                alert('Assinatura copiada com sucesso! Pode colar no Outlook sem perder a transparência.');
+                alert(destino === 'app'
+                    ? 'Assinatura copiada para o Outlook aplicativo.'
+                    : 'Assinatura copiada para o Outlook Web.');
 
             } catch (error) {
                 console.error(error);
                 alert('Ocorreu um erro: ' + error.message);
             } finally {
-                btn.innerText = textoOriginal;
-                btn.disabled = false;
+                botoes.forEach((botao, indice) => {
+                    botao.disabled = false;
+                    botao.innerText = textos[indice];
+                });
             }
         }
     </script>
